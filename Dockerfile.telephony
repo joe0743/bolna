@@ -2,22 +2,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (including ffmpeg for pydub)
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install requirements
+# Copy requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app code
-COPY bolna/ ./bolna/
-COPY local_setup/telephony_server/ ./telephony_server/
+# Copy app
+COPY . .
 
-# Expose port (Railway assigns PORT env var)
-EXPOSE 5001
+EXPOSE $PORT
 
-# Start the Bolna server
-CMD ["python", "-m", "uvicorn", "bolna.main:app", "--host", "0.0.0.0", "--port", "5001"]
+CMD ["python", "-m", "uvicorn", "bolna.main:app", "--host", "0.0.0.0", "--port", "$PORT"]
